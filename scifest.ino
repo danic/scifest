@@ -31,16 +31,7 @@ void loop() {
   static double avg = 0.0;
   static int count = 0;
   static int log_count = 0;
-  static int led_on = 0;
-  
-  if (led_on) {
-      led_on++;
-      if (led_on == 5) {
-        /* Turn off the LED. */
-        digitalWrite(ledPin, LOW);
-        led_on = 0;
-      }
-  }
+ 
   count++;
   // read the input on analog pin 0:
   int sensorValue = analogRead(A0);
@@ -58,10 +49,11 @@ void loop() {
     Serial.print(celsius);
     Serial.println(" C ");
     
-    if (celsius >= 30 && !led_on) {
+    if (celsius >= 30) {
       /* Turn on the LED. */
       digitalWrite(ledPin, HIGH);
-      led_on = 1;
+    } else {
+      digitalWrite(ledPin, LOW);
     }
     count = 0;
     avg = 0;
