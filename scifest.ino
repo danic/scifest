@@ -27,6 +27,7 @@ const char offCommand[] = "off";
 // Text to speech messages
 const char systemOn[] = "System on";
 const char systemOff[] = "System off";
+const char temperatureCritical[] = "Temperature Critical";
 
 // The setup routine runs once when you press reset
 void setup() {
@@ -49,14 +50,12 @@ void loop() {
     turnOn();
     if (last == 0) {
       TextToSpeech.say(systemOn);
-      Terminal.println("Said on");
     }
     last = 1;
   } else {
     turnOff();
     if (last == 1) {
       TextToSpeech.say(systemOff);
-      Terminal.println("Said off");
     }
     last = 0;
   }
@@ -90,6 +89,7 @@ void turnOn() {
     if (celsius >= 30) {
       /* Turn on the LED. */
       digitalWrite(ledPin, HIGH);
+      TextToSpeech.say(temperatureCritical);
     } else {
       digitalWrite(ledPin, LOW);
     }
