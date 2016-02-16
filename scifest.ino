@@ -18,14 +18,12 @@ int ledPin = 13;
 void setup() {
   /* Start communication. */
   OneSheeld.begin();
-  /* Save any previous logged values. */
-  //Logger.stop();
   /* Set a delay. */
   OneSheeld.delay(500);
-  /* Start logging in a new CSV file. */
-  //Logger.start("Temp values");
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
+  // Use an external analog reference
+  analogReference(EXTERNAL);
 }
 
 // the loop routine runs over and over again forever:
@@ -46,33 +44,19 @@ void loop() {
   count++;
   // read the input on analog pin 0:
   int sensorValue = analogRead(A0);
-  //Serial.println(sensorValue);
-  double temperature = sensorValue * (273.0/56.0);
+  //Serial.print(sensorValue);
+  double temperature = sensorValue * (293.4/59.5);
+  //Serial.print(" ");
+  //Serial.println(temperature);
   avg += temperature;
   // print out the value you read:
-  if (count == 5) {
+  if (count == 10) {
     int avg_temp = avg/count;
     int celsius = avg_temp - 273;
     Serial.print(avg_temp);
     Serial.print(" K ");
     Serial.print(celsius);
     Serial.println(" C ");
-    
-    /* Add temperature values as a column in the CSV file. */
-    //Logger.add("Temperature",celsius);
-    /* Log the row in the file. */
-    //Logger.log();
-    log_count++;
-    /* Stop logging after 20 readings and save the CSV file. */
-    if(log_count == 20)
-    {
-      /* Save the logging CSV file. */
-      //Logger.stop();
-      /* Reset counter. */
-      log_count = 0;
-      /* Start Logging again. */
-      //Logger.start("Temp values");
-    }  
     
     if (celsius >= 30 && !led_on) {
       /* Turn on the LED. */
