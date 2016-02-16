@@ -8,6 +8,7 @@
 #define CUSTOM_SETTINGS
 #define INCLUDE_VOICE_RECOGNIZER_SHIELD
 #define INCLUDE_TERMINAL_SHIELD
+#define INCLUDE_TEXT_TO_SPEECH_SHIELD
 // Include 1Sheeld library
 #include <OneSheeld.h>
 
@@ -18,9 +19,14 @@ double avg = 0.0;
 int count = 0;
 // Flag to switch system on or off. Controlled by voice recognition
 int on = 0;
+// Need to remember last status as text to speech does not work from callback
+int last = 0;
 // Recognised voice commands
 const char onCommand[] = "on";
 const char offCommand[] = "off";
+// Text to speech messages
+const char systemOn[] = "System on";
+const char systemOff[] = "System off";
 
 // The setup routine runs once when you press reset
 void setup() {
@@ -28,6 +34,8 @@ void setup() {
   OneSheeld.begin();
   // Initialize serial communication at 9600 bits per second:
   //Serial.begin(9600);
+  // Setup LED pin
+  pinMode(ledPin, OUTPUT);
   // Use an external analog reference
   analogReference(EXTERNAL);
   // Voice recognition setup
@@ -39,14 +47,24 @@ void setup() {
 void loop() {
   if (on) {
     turnOn();
+    if (last == 0) {
+      TextToSpeech.say(systemOn);
+      Terminal.println("Said on");
+    }
+    last = 1;
   } else {
     turnOff();
+    if (last == 1) {
+      TextToSpeech.say(systemOff);
+      Terminal.println("Said off");
+    }
+    last = 0;
   }
   OneSheeld.delay(1000);
 }
 
 // Function called from the main loop while status is on
-void turnOn() {
+void turnOn() {  
   count++;
   // read the input on analog pin 0:
   int sensorValue = analogRead(A0);
@@ -85,9 +103,9 @@ void turnOff() {
   count = 0;
   avg = 0;
   // Make LED blink
-  digitalWrite(led, HIGH);
+  digitalWrite(ledPin, HIGH);
   delay(1000);
-  digitalWrite(led, LOW);
+  digitalWrite(ledPin, LOW);
 }
 
 // This function will be invoked each time a new command is given
@@ -100,7 +118,7 @@ void cmdFunction (char *commandSpoken)
     on = 1;
   }
   else if (!strcmp(commandSpoken, offCommand)) {
-    off = 1;
+    on = 0;
   }
 }
 
