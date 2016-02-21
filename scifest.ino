@@ -19,11 +19,15 @@ double avg = 0.0;
 int count = 0;
 // Flag to switch system on or off. Controlled by voice recognition
 int on = 0;
+// Turn on debug mode
+int debug = 0;
 // Need to remember last status as text to speech does not work from callback
 int last = 0;
 // Recognised voice commands
 const char onCommand[] = "on";
 const char offCommand[] = "off";
+const char debugCommand[] = "start";
+const char silentCommand[] = "stop";
 // Text to speech messages
 const char systemOn[] = "System on";
 const char systemOff[] = "System off";
@@ -33,8 +37,6 @@ const char temperatureCritical[] = "Temperature Critical";
 void setup() {
   // Start communication
   OneSheeld.begin();
-  // Initialize serial communication at 9600 bits per second:
-  //Serial.begin(9600);
   // Setup LED pin
   pinMode(ledPin, OUTPUT);
   // Use an external analog reference
@@ -67,24 +69,26 @@ void turnOn() {
   count++;
   // read the input on analog pin 0:
   int sensorValue = analogRead(A0);
-  //Serial.print(sensorValue);
-  double temperature = sensorValue * (293.4/59.5);
-  //Serial.print(" ");
-  //Serial.println(temperature);
+  // Reference analog voltage
+  double aref = 4.425;
+  // Calibration offset
+  double calibration = 15.17;
+  double temperature = sensorValue * 1000.0 * (aref/1023.0) + calibration;
+  if (debug == 1) {
+    Terminal.print(sensorValue);
+    Terminal.print(" ");
+    Terminal.println(temperature);
+  }
   avg += temperature;
   // print out the value you read:
   if (count == 10) {
-    int avg_temp = avg/count;
-    int celsius = avg_temp - 273;
+    double avg_temp = avg/count;
+    double celsius = avg_temp - 273.0;
     
     Terminal.print(avg_temp);
     Terminal.print(" K ");
     Terminal.print(celsius);
     Terminal.println(" C ");
-//    Serial.print(avg_temp);
-//    Serial.print(" K ");
-//    Serial.print(celsius);
-//    Serial.println(" C ");
     
     if (celsius >= 30) {
       /* Turn on the LED. */
@@ -94,7 +98,7 @@ void turnOn() {
       digitalWrite(ledPin, LOW);
     }
     count = 0;
-    avg = 0;
+    avg = 0.0;
   }
 }
 
@@ -119,6 +123,12 @@ void cmdFunction (char *commandSpoken)
   }
   else if (!strcmp(commandSpoken, offCommand)) {
     on = 0;
+  }
+  else if (!strcmp(commandSpoken, debugCommand)) {
+    debug = 1;
+  }
+  else if (!strcmp(commandSpoken, silentCommand)) {
+    debug = 0;
   }
 }
 
